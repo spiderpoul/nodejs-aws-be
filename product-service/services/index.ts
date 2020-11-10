@@ -2,7 +2,7 @@ import { PRODUCTS_TABLE_NAME, STOCKS_TABLE_NAME } from "../constants";
 import { performQuery, performQueryWithTransaction } from "../db";
 import { Product } from "../models/db";
 
-const productFields = ['id', 'title', 'description', 'price', 'count', 'imageUrl'];
+const productFields = ['id', 'title', 'description', 'price', 'count'];
 
 
 export const getProducts = async (): Promise<Product[]> => {
@@ -17,7 +17,7 @@ export const getProductById = async (id: string): Promise<Product> => {
   }
   const [product] = await performQuery<Product>(query);
   if (!product) {
-    throw new Error(`Product not found`);
+    throw new Error(`Product with id = [${id}] was not found`);
   }
   return product;
 }
