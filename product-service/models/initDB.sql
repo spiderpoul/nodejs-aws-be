@@ -9,7 +9,7 @@ create table if not exists products (
 );
 
 create table if not exists stocks (
-	product_id uuid references products (id),
+	product_id uuid primary key references products (id),
 	count integer
 );
 

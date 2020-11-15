@@ -25,8 +25,8 @@ export const getProductById = async (id: string): Promise<Product> => {
 export const createProduct = async (productToCreate: Product) => {
   const productQuery = {
     text: `INSERT INTO
-        ${PRODUCTS_TABLE_NAME}(title, description, price)
-        VALUES($1, $2, $3) RETURNING *`,
+        ${PRODUCTS_TABLE_NAME}(title, description, price, imageUrl)
+        VALUES($1, $2, $3, $4) RETURNING id`,
     values: [
       productToCreate.title,
       productToCreate.description,
