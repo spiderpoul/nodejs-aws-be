@@ -15,16 +15,19 @@ export const importProductsFile: APIGatewayProxyHandler = async (
     const { name } = event.queryStringParameters;
 
     const s3 = new AWS.S3({
-        region: BUCKET_REGION,        
+        region: BUCKET_REGION,
+        signatureVersion: "v4",
     });
 
     const params = {
         Bucket: BUCKET,
-        Key: `${UPLOADED_FOLDER}/${name}`
+        Key: `${UPLOADED_FOLDER}/${name}`,
+        ContentType: "text/csv",
+        Expires: 60,
     };
 
     return new Promise<APIGatewayProxyResult>((resolve, reject) => {
-        s3.getSignedUrl("getObject", params, (error, url) => {
+        s3.getSignedUrl("putObject", params, (error, url) => {
             if (error) reject(processError(error));
 
             resolve(processResponse(url));

@@ -81,7 +81,7 @@ provider:
 #    - exclude-me-dir/**
 
 functions:
-  getProductsList:
+  importProductsFile:
     handler: handler.importProductsFile
     events:
       - http:
