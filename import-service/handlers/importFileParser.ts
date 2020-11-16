@@ -1,8 +1,6 @@
 import { S3Handler } from "aws-lambda";
 import AWS from "aws-sdk";
 import csv from "csv-parser";
-import util from "util";
-import stream from "stream";
 import "source-map-support/register";
 import {
     BUCKET_NAME,
@@ -11,10 +9,8 @@ import {
     UPLOADED_FOLDER,
 } from "../constants";
 
-const pipeline = util.promisify(stream.pipeline);
-
 export const importFileParser: S3Handler = async (event, _context) => {
-    const s3 = new AWS.S3({ region: BUCKET_REGION, signatureVersion: 'v4' });
+    const s3 = new AWS.S3({ region: BUCKET_REGION, signatureVersion: "v4" });
 
     for (const record of event.Records) {
         const recordKey = record.s3.object.key;
@@ -23,21 +19,33 @@ export const importFileParser: S3Handler = async (event, _context) => {
             .getObject({ Bucket: BUCKET_NAME, Key: recordKey })
             .createReadStream();
 
-        await pipeline(s3Stream, csv());
+        s3Stream
+            .pipe(csv())
+            .on("data", (data) => console.log(data))
+            .on("end", async () => {
+                console.log(`Copy from ${BUCKET_NAME}/${recordKey}`);
 
-        await s3
-            .copyObject({
-                Bucket: BUCKET_NAME,
-                CopySource: `${BUCKET_NAME}/${recordKey}`,
-                Key: recordKey.replace(UPLOADED_FOLDER, PARSED_FOLDER),
-            })
-            .promise();
+                await s3
+                    .copyObject({
+                        Bucket: BUCKET_NAME,
+                        CopySource: `${BUCKET_NAME}/${recordKey}`,
+                        Key: recordKey.replace(UPLOADED_FOLDER, PARSED_FOLDER),
+                    })
+                    .promise();
 
-        await s3
-            .deleteObject({
-                Bucket: BUCKET_NAME,
-                Key: recordKey,
-            })
-            .promise();
+                console.log(
+                    `Copied from ${BUCKET_NAME}/${recordKey.replace(
+                        UPLOADED_FOLDER,
+                        PARSED_FOLDER
+                    )}`
+                );
+
+                await s3
+                    .deleteObject({
+                        Bucket: BUCKET_NAME,
+                        Key: recordKey,
+                    })
+                    .promise();
+            });
     }
 };
