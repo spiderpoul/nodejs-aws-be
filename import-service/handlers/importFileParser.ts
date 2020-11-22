@@ -11,6 +11,7 @@ import {
 
 export const importFileParser: S3Handler = async (event, _context) => {
     const s3 = new AWS.S3({ region: BUCKET_REGION, signatureVersion: "v4" });
+    const sqs = new AWS.SQS({ region: BUCKET_REGION });
 
     for (const record of event.Records) {
         const recordKey = record.s3.object.key;
@@ -21,7 +22,30 @@ export const importFileParser: S3Handler = async (event, _context) => {
 
         s3Stream
             .pipe(csv())
-            .on("data", (data) => console.log(data))
+            .on("data", (data) => {
+                console.log("sending data", data);
+                sqs.sendMessage(
+                    {
+                        MessageBody: JSON.stringify(data),
+                        QueueUrl: process.env.SQS_URl,
+                    },
+                    (error, _data) => {
+                        if (error) {
+                            console.error(
+                                "importFileParser SQS error:",
+                                recordKey,
+                                error
+                            );
+                        } else {
+                            console.log(
+                                "importFileParser SQS data:",
+                                recordKey,
+                                _data
+                            );
+                        }
+                    }
+                );
+            })
             .on("end", async () => {
                 console.log(`Copy from ${BUCKET_NAME}/${recordKey}`);
 

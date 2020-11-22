@@ -7,6 +7,15 @@ export type Product = {
   count?: number
 };
 
+export type CSVProduct = {
+  title: string;
+  description: string;
+  price: string;
+  imageurl: string;
+  count: string;
+
+}
+
 
 export const PRODUCTS:Product[]  = [
   {
