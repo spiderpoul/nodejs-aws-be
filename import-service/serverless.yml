@@ -164,7 +164,7 @@ resources:
     GatewayResponseAccessDenied:
       Type: AWS::ApiGateway::GatewayResponse
       Properties:
-        RestApiId:
+        RestApiId: 
           Ref: 'ApiGatewayRestApi'
         ResponseType: ACCESS_DENIED
         ResponseParameters:
